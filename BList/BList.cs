@@ -175,7 +175,7 @@ namespace System.Collections.Generic
 
         public void CopyTo(T[] array, int arrayIndex)
         {
-            Array.Copy(_items, 0, array, arrayIndex, _size);
+            Array.Copy(_items, _offset, array, arrayIndex, _size);
         }
 
         public IEnumerator<T> GetEnumerator()
