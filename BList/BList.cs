@@ -4,8 +4,8 @@ namespace System.Collections.Generic
 {
     public class BList<T> : IList<T>, IReadOnlyList<T>
     {
-        private const int InitialCapacity = 4;
-        private const int InitialOffset = 2;
+        private const int InitialCapacity = 16;
+        private const int InitialOffset = 8;
 
         private int _size;
         private int _offset;
@@ -20,8 +20,6 @@ namespace System.Collections.Generic
             _capacity = InitialCapacity;
             _items = new T[InitialCapacity];
         }
-
-
 
         private void Insert(int insertIndex, T[] insertItems)
         {
@@ -48,16 +46,15 @@ namespace System.Collections.Generic
                 var newOffset = (newCapacity/2) - (newSize/2) - padLeft;
                 var newItems = new T[newCapacity];
 
-
                 for (int i = 0; i < insertIndex; i++)
                     newItems[newOffset + i] = _items[_offset + i];
-        
+
                 for (int i = insertIndex; i < _size; i++)
                     newItems[newOffset + i + insertCount] = _items[_offset + i];
 
                 for (int i = 0; i < insertCount; i++)
                     newItems[newOffset + insertIndex + i] = insertItems[i];
-        
+
                 _items = newItems;
                 _offset = newOffset;
                 _size = newSize;
@@ -65,29 +62,28 @@ namespace System.Collections.Generic
             }
             else
             {
-
-                if (insertIndex != 0)
-                {
-                    //for (int i = 0; i < insertIndex; i++)
-                    //    _items[_offset + i] = _items[_offset + i];
-
+                if (insertIndex == 0)
+                    _offset = _offset - insertCount;
+                else
                     for (int i = _size - 1; i >= insertIndex; i--)
                         _items[_offset + i + insertCount] = _items[_offset + i];
 
-                    for (int i = 0; i < insertCount; i++)
-                        _items[_offset + insertIndex + i] = insertItems[i];
-                }
-                else
-                {
-                    _offset = _offset - insertCount;
 
-                    for (int i = 0; i < insertCount; i++)
-                        _items[_offset + insertIndex + i] = insertItems[i];
-                }
+                for (int i = 0; i < insertCount; i++)
+                    _items[_offset + insertIndex + i] = insertItems[i];
 
                 _size = _size + insertCount;
             }
+        }
+        
+        public void Insert(int insertIndex, T item)
+        {
+            Insert(insertIndex, new[] { item });
+        }
 
+        public void Add(T item)
+        {
+            Insert(Count, new[] { item });
         }
 
         public int Count => _size;
@@ -143,17 +139,7 @@ namespace System.Collections.Generic
         public T this[int index]
         {
             get { return _items[_offset + index]; }
-            set { Insert(index, new[] { value }); }
-        }
-
-        public void Insert(int insertIndex, T item)
-        {
-            Insert(insertIndex, new[] { item });
-        }
-        
-        public void Add(T item)
-        {
-            Insert(Count, new[] { item });
+            set { _items[_offset + index] = value ; }
         }
 
         public void AddRange(IEnumerable<T> collection)
