@@ -1,8 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using NUnit.Framework;
 
 namespace Testing
@@ -71,7 +69,7 @@ namespace Testing
         [Test]
         public void given_empty_blist_when_elements_are_added_individually_then_blist_count_should_equal_number_added()
         {
-            var count = 2 << 10;
+            var count = 1024;
             var expected = new int[count].Select(_ => _random.Next()).ToArray();
 
             var blist = new BList<int>();
@@ -85,7 +83,7 @@ namespace Testing
         [Test]
         public void given_empty_blist_when_elements_are_added_individually_then_blist_indexer_should_return_elements()
         {
-            var count = 2 << 10;
+            var count = 1024;
             var expected = new int[count].Select(_ => _random.Next()).ToArray();
 
             var blist = new BList<int>();
@@ -117,7 +115,7 @@ namespace Testing
         [Test]
         public void given_empty_blist_when_elements_are_inserted_at_zero_index_individually_then_blist_iterator_should_return_elements()
         {
-            var count = 32;
+            var count = 1024;
             var initial = new int[count].Select(_ => _random.Next()).ToArray();
             var expected = initial.Reverse().ToArray();
 
@@ -126,7 +124,7 @@ namespace Testing
             foreach (var item in initial)
                 blist.Insert(0, item);
 
-            Assert.That(blist.Count, Is.EqualTo(32));
+            Assert.That(blist.Count, Is.EqualTo(count));
 
             CollectionAssert.AreEqual(expected, blist);
         }
@@ -144,9 +142,11 @@ namespace Testing
             foreach (var item in initial)
                 blist.Add(item);
 
+            CollectionAssert.AreEqual(initial, blist);
+
             for (int i = 0; i < 256; i++)
                 blist[256 + i] = replacement[i];
-
+            
             CollectionAssert.AreEqual(expected, blist);
         }
 
