@@ -1,4 +1,5 @@
 ﻿using System.Linq;
+using System.Runtime.CompilerServices;
 
 namespace System.Collections.Generic
 {
@@ -46,14 +47,9 @@ namespace System.Collections.Generic
                 var newOffset = (newCapacity/2) - (newSize/2) - padLeft;
                 var newItems = new T[newCapacity];
 
-                for (int i = 0; i < insertIndex; i++)
-                    newItems[newOffset + i] = _items[_offset + i];
-
-                for (int i = insertIndex; i < _size; i++)
-                    newItems[newOffset + i + insertCount] = _items[_offset + i];
-
-                for (int i = 0; i < insertCount; i++)
-                    newItems[newOffset + insertIndex + i] = insertItems[i];
+                Array.Copy(_items, _offset, newItems, newOffset, insertIndex);
+                Array.Copy(_items, _offset, newItems, newOffset + 1, _size - insertIndex);
+                Array.Copy(insertItems, 0, newItems, newOffset + insertIndex, insertCount);
 
                 _items = newItems;
                 _offset = newOffset;
@@ -63,27 +59,89 @@ namespace System.Collections.Generic
             else
             {
                 if (insertIndex == 0)
-                    _offset = _offset - insertCount;
-                else
-                    for (int i = _size - 1; i >= insertIndex; i--)
-                        _items[_offset + i + insertCount] = _items[_offset + i];
+                    _offset = _offset - 1;
+                else if (insertIndex < _size)
+                    Array.Copy(_items, _offset + insertIndex, _items, _offset + insertIndex + 1, _size - insertIndex);
 
-
-                for (int i = 0; i < insertCount; i++)
-                    _items[_offset + insertIndex + i] = insertItems[i];
+                Array.Copy(insertItems, 0, _items, _offset + insertIndex, insertCount);
 
                 _size = _size + insertCount;
             }
         }
-        
+
         public void Insert(int insertIndex, T item)
         {
-            Insert(insertIndex, new[] { item });
+            if (insertIndex < 0)
+                throw new ArgumentOutOfRangeException(nameof(insertIndex));
+
+            var padRight = Math.Max(0, (insertIndex == 0)
+                ? -_size
+                : (insertIndex + 1) - _size);
+
+            var padLeft = insertIndex == 0
+                ? 1
+                : 0;
+
+            var requiresResize = _offset - padLeft <= 0 ||
+                                 _offset + _size + padRight >= _capacity;
+            if (requiresResize)
+            {
+                var newSize = _size + 1;
+                var newCapacity = Math.Max(newSize, _capacity * 2);
+                var newOffset = (newCapacity / 2) - (newSize / 2) - padLeft;
+                var newItems = new T[newCapacity];
+
+                Array.Copy(_items, _offset, newItems, newOffset, insertIndex);
+                Array.Copy(_items, _offset, newItems, newOffset + 1, _size - insertIndex);
+
+                newItems[newOffset + insertIndex] = item;
+
+                _items = newItems;
+                _offset = newOffset;
+                _size = newSize;
+                _capacity = newCapacity;
+            }
+            else
+            {
+                if (insertIndex == 0)
+                    _offset = _offset - 1;
+                else if (insertIndex < _size)
+                    Array.Copy(_items, _offset + insertIndex, _items, _offset + insertIndex + 1, _size - insertIndex);
+
+                _items[_offset + insertIndex] = item;
+
+                _size = _size + 1;
+            }
         }
 
         public void Add(T item)
         {
-            Insert(Count, new[] { item });
+            var padRight = 1;
+
+            var requiresResize = _offset + _size + padRight >= _capacity;
+
+            if (requiresResize)
+            {
+                var newSize = _size + 1;
+                var newCapacity = Math.Max(newSize, _capacity * 2);
+                var newOffset = (newCapacity/2) - (newSize/2);
+                var newItems = new T[newCapacity];
+
+                Array.Copy(_items, _offset, newItems, newOffset, _size);
+
+                newItems[newOffset + _size] = item;
+
+                _items = newItems;
+                _offset = newOffset;
+                _size = newSize;
+                _capacity = newCapacity;
+            }
+            else
+            {
+                _items[_offset + _size] = item;
+
+                _size += 1;
+            }
         }
 
         public int Count => _size;
