@@ -14,7 +14,7 @@ This makes it far cheaper to insert elements at index 0. Inserting at index 1 is
 ##results: 
 
 | structure | add first | add middle | add last |
-|---|---|---|
+|---|---|---|---|
 |List|1955.3ms|861.3ms|**1.9ms**|
 |Linked-List|10.7ms|**12.6ms'**|8.6ms|
 |B-List|**2.4ms**|856.6ms|2.7ms|
