@@ -43,12 +43,12 @@ namespace System.Collections.Generic
             var padLeft = insertIndex == 0 ? 1 : 0;
 
             var requiresResize = _offset - padLeft <= 0 ||
-                                    _offset + _size + padRight >= _capacity;
+                                 _offset + _size + padRight >= _capacity;
             if (requiresResize)
             {
                 var newSize = _size + 1;
-                var newCapacity = Math.Max(newSize, _capacity * 2);
-                var newOffset = (newCapacity / 2) - (newSize / 2) - padLeft;
+                var newCapacity = Math.Max(newSize, _capacity*2);
+                var newOffset = (newCapacity/2) - (newSize/2) - padLeft;
                 var newItems = new T[newCapacity];
 
                 Array.Copy(_items, _offset, newItems, newOffset, insertIndex);
@@ -132,7 +132,7 @@ namespace System.Collections.Generic
                 RaiseCollectionAdd(insertIndex, insertItems);
         }
 
-        
+
 
         public void Add(T item)
         {
@@ -165,7 +165,7 @@ namespace System.Collections.Generic
 
             _version++;
 
-            if(CollectionChanged!= null)
+            if (CollectionChanged != null)
                 RaiseCollectionAdd(_size - 1, item);
         }
 
