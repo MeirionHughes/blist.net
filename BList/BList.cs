@@ -24,6 +24,15 @@ namespace System.Collections.Generic
             _items = new T[InitialCapacity];
         }
 
+        public BList(int initialCapacity)
+        {
+            _size = 0;
+            _version = 0;
+            _offset = initialCapacity / 2;
+            _capacity = initialCapacity;
+            _items = new T[initialCapacity];
+        }
+
         private void Insert(int insertIndex, T[] insertItems)
         {
             if (insertIndex < 0)
