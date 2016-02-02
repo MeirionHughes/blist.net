@@ -167,14 +167,22 @@ namespace System.Collections.Generic
 
         public int IndexOf(T item)
         {
-            for (int i = 0; i < _size ; i++)
+            if ((Object)item == null)
             {
-                if (_items[i+_offset].Equals(item))
-                {
-                    return i;
-                }
+                for (int i = 0; i < _size; i++)
+                    if ((Object)_items[_offset + i] == null)
+                        return i;
+                return -1;
             }
-            return -1;
+            else
+            {
+                EqualityComparer<T> c = EqualityComparer<T>.Default;
+                for (int i = 0; i < _size; i++)
+                {
+                    if (c.Equals(_items[_offset + i], item)) return i;
+                }
+                return -1;
+            }
         }
 
         public bool Remove(T item)
