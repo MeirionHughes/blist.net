@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.Specialized;
 using System.Linq;
 using NUnit.Framework;
 
@@ -228,6 +229,49 @@ namespace Testing
             Assert.That(blist.Count, Is.EqualTo(480));
 
             CollectionAssert.AreEqual(expected, blist);
+        }
+
+
+        [Test]
+        public void given_empty_blist_when_multiple_elements_added_then_blist_iteractor_should_return_elements()
+        {
+            var expected = new int[512].Select(_ => _random.Next()).ToArray();
+  
+            var blist = new BList<int>();
+
+            blist.AddRange(expected);
+            
+            CollectionAssert.AreEqual(expected, blist);
+        }
+
+        [Test]
+        public void given_existing_blist_when_multiple_elements_inserted_at_zero_then_blist_iteractor_should_return_elements()
+        {
+            var initial = new int[256].Select(_ => _random.Next()).ToArray();
+            var expected = initial.Concat(initial).ToArray();
+
+            var blist = new BList<int>();
+
+            blist.AddRange(initial);
+            blist.Insert(0, initial);
+
+            CollectionAssert.AreEqual(expected, blist);
+        }
+
+        [Test]
+        public void given_blist_when_clear_is_called_then_collectionchanged_raised()
+        {
+            var blist = new BList<int>();
+
+            blist.AddRange(new int[32].Select(_ => _random.Next()).ToArray());
+
+            NotifyCollectionChangedEventArgs args = null;
+            blist.CollectionChanged += (_, a) => args = a;
+
+            blist.Clear();
+
+            Assert.That(args, Is.Not.Null);
+            Assert.That(args.Action, Is.EqualTo(NotifyCollectionChangedAction.Reset));
         }
     }
 }
