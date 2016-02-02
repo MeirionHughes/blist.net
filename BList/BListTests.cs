@@ -259,6 +259,36 @@ namespace Testing
         }
 
         [Test]
+        public void given_existing_blist_when_multiple_elements_replaced_then_blist_iteractor_should_return_elements()
+        {
+            var initial = new int[256].Select(_ => _random.Next()).ToArray();
+            var replace = new int[32].Select(_ => _random.Next()).ToArray();
+            var expected = initial.Take(32).Concat(replace).Concat(initial.Skip(64)).ToArray();
+
+            var blist = new BList<int>();
+
+            blist.AddRange(initial);
+            blist.ReplaceRange(replace, 32);
+
+            CollectionAssert.AreEqual(expected, blist);
+        }
+
+        [Test]
+        public void given_existing_blist_when_multiple_elements_replaced_at_index_zero_then_blist_iteractor_should_return_elements()
+        {
+            var initial = new int[256].Select(_ => _random.Next()).ToArray();
+            var replace = new int[32].Select(_ => _random.Next()).ToArray();
+            var expected = replace.Concat(initial.Skip(32)).ToArray();
+
+            var blist = new BList<int>();
+
+            blist.AddRange(initial);
+            blist.ReplaceRange(replace, 0);
+
+            CollectionAssert.AreEqual(expected, blist);
+        }
+
+        [Test]
         public void given_blist_when_clear_is_called_then_collectionchanged_raised()
         {
             var blist = new BList<int>();
