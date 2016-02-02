@@ -273,5 +273,72 @@ namespace Testing
             Assert.That(args, Is.Not.Null);
             Assert.That(args.Action, Is.EqualTo(NotifyCollectionChangedAction.Reset));
         }
+
+        [Test]
+        public void given_blist_when_item_removed_then_collectionchanged_raised()
+        {
+            var blist = new BList<int>();
+
+            var initial = new int[32].Select(_ => _random.Next()).ToArray();
+            var expected = initial[16];
+
+            blist.AddRange(initial);
+
+            NotifyCollectionChangedEventArgs args = null;
+            blist.CollectionChanged += (_, a) => args = a;
+
+            blist.RemoveAt(16);
+
+            Assert.That(args, Is.Not.Null);
+            Assert.That(args.Action, Is.EqualTo(NotifyCollectionChangedAction.Remove));
+            Assert.That(args.OldStartingIndex, Is.EqualTo(16));
+            Assert.That(args.OldItems[0], Is.EqualTo(expected));
+        }
+
+        [Test]
+        public void given_blist_when_item_added_then_collectionchanged_raised()
+        {
+            var blist = new BList<int>();
+
+            var initial = new int[32].Select(_ => _random.Next()).ToArray();
+            var expected = _random.Next();
+
+            blist.AddRange(initial);
+
+            NotifyCollectionChangedEventArgs args = null;
+            blist.CollectionChanged += (_, a) => args = a;
+
+            blist.Insert(16, expected);
+
+            Assert.That(args, Is.Not.Null);
+            Assert.That(args.Action, Is.EqualTo(NotifyCollectionChangedAction.Add));
+            Assert.That(args.NewStartingIndex, Is.EqualTo(16));
+            Assert.That(args.NewItems[0], Is.EqualTo(expected));
+        }
+
+        [Test]
+        public void given_blist_when_item_replaced_then_collectionchanged_raised()
+        {
+            var blist = new BList<int>();
+
+            var index = 10;
+            var initial = new int[32].Select(_ => _random.Next()).ToArray();
+            var expectedNew = _random.Next();
+            var expectedOld = initial[index];
+
+            blist.AddRange(initial);
+
+            NotifyCollectionChangedEventArgs args = null;
+            blist.CollectionChanged += (_, a) => args = a;
+
+            blist[index] = expectedNew;
+            
+            Assert.That(args, Is.Not.Null);
+            Assert.That(args.Action, Is.EqualTo(NotifyCollectionChangedAction.Replace));
+            Assert.That(args.NewStartingIndex, Is.EqualTo(10));
+            Assert.That(args.OldStartingIndex, Is.EqualTo(10));
+            Assert.That(args.NewItems[0], Is.EqualTo(expectedNew));
+            Assert.That(args.OldItems[0], Is.EqualTo(expectedOld));
+        }
     }
 }

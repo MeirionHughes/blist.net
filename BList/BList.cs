@@ -34,6 +34,52 @@ namespace System.Collections.Generic
             _items = new T[initialCapacity];
         }
 
+        public void Insert(int insertIndex, T item)
+        {
+            if (insertIndex < 0)
+                throw new ArgumentOutOfRangeException(nameof(insertIndex));
+
+            var padRight = Math.Max(0, (insertIndex == 0) ? 0 : (insertIndex + 1) - _size);
+            var padLeft = insertIndex == 0 ? 1 : 0;
+
+            var requiresResize = _offset - padLeft <= 0 ||
+                                    _offset + _size + padRight >= _capacity;
+            if (requiresResize)
+            {
+                var newSize = _size + 1;
+                var newCapacity = Math.Max(newSize, _capacity * 2);
+                var newOffset = (newCapacity / 2) - (newSize / 2) - padLeft;
+                var newItems = new T[newCapacity];
+
+                Array.Copy(_items, _offset, newItems, newOffset, insertIndex);
+                Array.Copy(_items, _offset, newItems, newOffset + 1, _size - insertIndex);
+
+                newItems[newOffset + insertIndex] = item;
+
+                _items = newItems;
+                _offset = newOffset;
+                _size = newSize;
+                _capacity = newCapacity;
+            }
+            else
+            {
+                if (insertIndex == 0)
+                    _offset = _offset - 1;
+                else if (insertIndex < _size)
+                    Array.Copy(_items, _offset + insertIndex, _items, _offset + insertIndex + 1, _size - insertIndex);
+
+                _items[_offset + insertIndex] = item;
+
+                _size = _size + 1;
+            }
+
+            _version++;
+
+            if (CollectionChanged != null)
+                RaiseCollectionAdd(insertIndex, item);
+        }
+
+
         public void Insert(int insertIndex, T[] insertItems)
         {
             if (insertIndex < 0)
@@ -86,55 +132,7 @@ namespace System.Collections.Generic
                 RaiseCollectionAdd(insertIndex, insertItems);
         }
 
-        public void Insert(int insertIndex, T item)
-        {
-            if (insertIndex < 0)
-                throw new ArgumentOutOfRangeException(nameof(insertIndex));
-
-            var padRight = Math.Max(0, (insertIndex == 0)
-                ? -_size
-                : (insertIndex + 1) - _size);
-
-            var padLeft = insertIndex == 0
-                ? 1
-                : 0;
-
-            var requiresResize = _offset - padLeft <= 0 ||
-                                 _offset + _size + padRight >= _capacity;
-            if (requiresResize)
-            {
-                var newSize = _size + 1;
-                var newCapacity = Math.Max(newSize, _capacity*2);
-                var newOffset = (newCapacity/2) - (newSize/2) - padLeft;
-                var newItems = new T[newCapacity];
-
-                Array.Copy(_items, _offset, newItems, newOffset, insertIndex);
-                Array.Copy(_items, _offset, newItems, newOffset + 1, _size - insertIndex);
-
-                newItems[newOffset + insertIndex] = item;
-
-                _items = newItems;
-                _offset = newOffset;
-                _size = newSize;
-                _capacity = newCapacity;
-            }
-            else
-            {
-                if (insertIndex == 0)
-                    _offset = _offset - 1;
-                else if (insertIndex < _size)
-                    Array.Copy(_items, _offset + insertIndex, _items, _offset + insertIndex + 1, _size - insertIndex);
-
-                _items[_offset + insertIndex] = item;
-
-                _size = _size + 1;
-            }
-
-            _version++;
-
-            if (CollectionChanged != null)
-                RaiseCollectionAdd(insertIndex, item);
-        }
+        
 
         public void Add(T item)
         {
@@ -240,9 +238,10 @@ namespace System.Collections.Generic
             get { return _items[_offset + index]; }
             set
             {
+                var old = _items[_offset + index];
                 _items[_offset + index] = value;
                 _version++;
-                RaiseCollectionReplace(index, value);
+                RaiseCollectionReplace(index, value, old);
             }
         }
 
@@ -256,19 +255,22 @@ namespace System.Collections.Generic
             if (index < 0)
                 throw new ArgumentOutOfRangeException(nameof(index));
 
-            var replaced = new List<T>();
+            var newItems = new List<T>();
+            var oldItems = new List<T>();
 
             foreach (var item in collection)
             {
                 if (index >= _size)
                     break;
 
-                this[index++] = item;
-                replaced.Add(item);
+                oldItems.Add(_items[_offset + index]);
+                _items[_offset + index] = item;
+                newItems.Add(item);
+                index += 1;
             }
 
-            if (replaced.Count > 0)
-                RaiseCollectionReplace(index, replaced);
+            if (newItems.Count > 0)
+                RaiseCollectionReplace(index, newItems, oldItems);
         }
 
         public void Clear()
@@ -342,16 +344,16 @@ namespace System.Collections.Generic
                 NotifyCollectionChangedAction.Remove, oldItem, index));
         }
 
-        protected virtual void RaiseCollectionReplace(int index, IList newItems)
+        protected virtual void RaiseCollectionReplace(int index, IList newItems, IList oldItems)
         {
             CollectionChanged?.Invoke(this, new NotifyCollectionChangedEventArgs(
-                NotifyCollectionChangedAction.Replace, newItems, index));
+                NotifyCollectionChangedAction.Replace, newItems, oldItems, index));
         }
 
-        protected virtual void RaiseCollectionReplace(int index, T newItem)
+        protected virtual void RaiseCollectionReplace(int index, T newItem, T oldItem)
         {
             CollectionChanged?.Invoke(this, new NotifyCollectionChangedEventArgs(
-                NotifyCollectionChangedAction.Replace, newItem, index));
+                NotifyCollectionChangedAction.Replace, newItem, oldItem, index));
         }
 
         protected virtual void RaiseCollectionAdd(int index, IList newItems)
