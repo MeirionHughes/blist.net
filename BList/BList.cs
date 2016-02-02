@@ -11,11 +11,13 @@ namespace System.Collections.Generic
         private int _size;
         private int _offset;
         private int _capacity;
+        private int _version;
 
         private T[] _items;
 
         public BList()
         {
+            _version = 0;
             _size = 0;
             _offset = InitialOffset;
             _capacity = InitialCapacity;
@@ -67,6 +69,8 @@ namespace System.Collections.Generic
 
                 _size = _size + insertCount;
             }
+
+            _version++;
         }
 
         public void Insert(int insertIndex, T item)
@@ -112,6 +116,8 @@ namespace System.Collections.Generic
 
                 _size = _size + 1;
             }
+
+            _version++;
         }
 
         public void Add(T item)
@@ -142,6 +148,8 @@ namespace System.Collections.Generic
 
                 _size += 1;
             }
+
+            _version++;
         }
 
         public int Count => _size;
@@ -192,12 +200,14 @@ namespace System.Collections.Generic
 
                 _size -= 1;
             }
+
+            _version++;
         }
 
         public T this[int index]
         {
             get { return _items[_offset + index]; }
-            set { _items[_offset + index] = value ; }
+            set { _items[_offset + index] = value; _version++; }
         }
 
         public void AddRange(IEnumerable<T> collection)
@@ -209,6 +219,7 @@ namespace System.Collections.Generic
         {
             _offset = _capacity / 2;
             _size = 0;
+            _version++;
         }
 
         public bool Contains(T item)
@@ -238,8 +249,16 @@ namespace System.Collections.Generic
 
         public IEnumerator<T> GetEnumerator()
         {
+            var versionStart = _version;
+
             for (int i = _offset; i < _offset + _size; i++)
+            {
+                if (_version != versionStart)
+                    throw new InvalidOperationException(
+                        "Collection was modified; enumeration operation may not execute.");
+
                 yield return _items[i];
+            }
         }
 
         IEnumerator IEnumerable.GetEnumerator()
