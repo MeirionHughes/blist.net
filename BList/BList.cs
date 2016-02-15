@@ -1,10 +1,9 @@
 ﻿using System.Collections.Specialized;
 using System.Linq;
-using System.Runtime.CompilerServices;
 
 namespace System.Collections.Generic
 {
-    public class BList<T> : IList<T>, IReadOnlyList<T>, INotifyCollectionChanged
+    public class BList<T> : IReadOnlyNotifyList<T>, INotifyList<T>
     {
         private const int InitialCapacity = 16;
         private const int InitialOffset = 8;

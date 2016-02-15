@@ -190,6 +190,23 @@ namespace Testing
         }
 
         [Test]
+        public void given_existing_blist_when_multiple_elements_are_inserted_at_index_zero_then_blist_iterator_should_return_correct_latest_elements()
+        {
+            var initial = new int[512].Select(_ => _random.Next()).ToArray();
+            var insertzero = new int[256].Select(_ => _random.Next()).ToArray();
+            var expected = insertzero.Reverse().Concat(initial).ToArray();
+
+            var blist = new BList<int>();
+
+            foreach (var item in initial)
+                blist.Add(item);
+
+            blist.Insert(0, insertzero);
+
+            CollectionAssert.AreEqual(expected, blist);
+        }
+
+        [Test]
         public void given_existing_blist_when_elements_are_removed_by_index_with_zero_index_then_blist_iterator_should_return_correct_elements()
         {
             var initial = new int[512].Select(_ => _random.Next()).ToArray();
@@ -370,5 +387,8 @@ namespace Testing
             Assert.That(args.NewItems[0], Is.EqualTo(expectedNew));
             Assert.That(args.OldItems[0], Is.EqualTo(expectedOld));
         }
+
+
+      
     }
 }
