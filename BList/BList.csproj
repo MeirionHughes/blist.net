@@ -47,6 +47,7 @@
     <Compile Include="BList.cs" />
     <Compile Include="BListPerformance.cs" />
     <Compile Include="BListTests.cs" />
+    <Compile Include="Bugs.cs" />
     <Compile Include="INotifyList.cs" />
     <Compile Include="IReadOnlyNotifyList.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

@@ -79,7 +79,7 @@ namespace System.Collections.Generic
         }
 
 
-        public void Insert(int insertIndex, T[] insertItems)
+        public void InsertRange(T[] insertItems, int insertIndex)
         {
             if (insertIndex < 0)
                 throw new ArgumentOutOfRangeException(nameof(insertIndex));
@@ -116,7 +116,7 @@ namespace System.Collections.Generic
             else
             {
                 if (insertIndex == 0)
-                    _offset = _offset - 1;
+                    _offset = _offset - insertCount;
                 else if (insertIndex < _size)
                     Array.Copy(_items, _offset + insertIndex, _items, _offset + insertIndex + 1, _size - insertIndex);
 
@@ -246,7 +246,7 @@ namespace System.Collections.Generic
 
         public void AddRange(IEnumerable<T> collection)
         {
-            Insert(_size, collection.ToArray());
+            InsertRange(collection.ToArray(), _size);
         }
 
         public void ReplaceRange(IEnumerable<T> collection, int index)
